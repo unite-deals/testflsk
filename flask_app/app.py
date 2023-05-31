@@ -2,9 +2,10 @@ from flask import Flask, render_template, Response
 import cv2
 
 app = Flask(__name__)
-video_capture = cv2.VideoCapture(0)
+
 
 def generate_frames():
+    video_capture = cv2.VideoCapture(0)
     while True:
         success, frame = video_capture.read()
         if not success:
