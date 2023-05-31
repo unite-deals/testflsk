@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Distance Measurement App</title>
+    <style>
+        #video {
+            display: block;
+            margin: 20px auto;
+            border: 1px solid black;
+        }
+        #canvas {
+            display: block;
+            margin: 20px auto;
+            border: 1px solid black;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Distance Measurement App</h1>
+    <video id="video" autoplay></video>
+    <canvas id="canvas"></canvas>
+    <button onclick="measureDistance()">Measure Distance</button>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let startPoint = null;
+        let endPoint = null;
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((error) => {
+                console.error('Error accessing camera: ', error);
+            });
+
+        function measureDistance() {
+            // Check if both points are selected
+            if (startPoint && endPoint) {
+                const dx = endPoint.x - startPoint.x;
+                const dy = endPoint.y - startPoint.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                alert(`Distance: ${distance.toFixed(2)} pixels`);
+
+                startPoint = null;
+                endPoint = null;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            } else {
+                alert('Please select two points.');
+            }
+        }
+
+        canvas.addEventListener('mousedown', function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            startPoint = { x, y };
+        });
+
+        canvas.addEventListener('mouseup', function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            endPoint = { x, y };
+        });
+
+        function drawMarkers() {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            if (startPoint) {
+                drawMarker(startPoint);
+            }
+
+            if (endPoint) {
+                drawMarker(endPoint);
+            }
+        }
+
+        function drawMarker(point) {
+            const markerSize = 10;
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, markerSize, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        setInterval(drawMarkers, 100);
+    </script>
+</body>
+</html>
